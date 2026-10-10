@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>SAMA Pre-Login Demo</title>
+</head>
+<body>
+<div class="container">
+  <h2>🇸🇦 SAMA Pre-Login (3 Screens)</h2>
+  <button onclick="toggleFakeGPS()" class="toggle">📍 Toggle Fake GPS (Current: <span id="gpsStatus"></span>)</button>
+  <div id="samaBanner" class="banner"></div>
+
+  <div class="tabs">
+    <button onclick="showScreen(1)" class="active">1. Splash (SOFT)</button>
+    <button onclick="showScreen(2)">2. Login (SOFT)</button>
+    <button onclick="showScreen(3)">3. Forgot (HARD)</button>
+  </div>
+
+  <div id="screen1" class="screen"> <h3>Screen 1: Splash - SOFT Warning</h3> <p>App start - Background GPS check...</p> <p id="log1"></p> </div>
+  <div id="screen2" class="screen" style="display:none"> <h3>Screen 2: Login - SOFT Warning</h3> <input placeholder="Username"><input type="password" placeholder="Password"><button onclick="goToDashboard()">Login</button> <p id="log2"></p> </div>
+  <div id="screen3" class="screen" style="display:none"> <h3>Screen 3: Forgot Password - HARD Block</h3> <p>SAMA Rule: Forgot pe Fake GPS = BLOCK</p><button onclick="testForgot()">Try Reset Password</button> <p id="log3"></p> </div>
+  
+  <a href="dashboard.html" class="nextLink">➡️ Go to Post-Login (Dashboard + Transfer)</a>
+</div>
+<script src="samaPreLogin.js"></script>
+<script>
+document.getElementById("gpsStatus").innerText = localStorage.getItem("FAKE_GPS")==="1" ? "FAKE (Nigeria)" : "REAL (Riyadh)";
+async function showScreen(n){
+  document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
+  document.getElementById("screen"+n).style.display="block";
+  let mode = n===3 ? "HARD" : "SOFT";
+  let name = n===1 ? "Splash" : n===2 ? "Login" : "Forgot";
+  let res = await checkSAMA_PreLogin(name, mode);
+  document.getElementById("log"+n).innerText = `Risk:${res.risk} Acc:${res.accuracy} Allowed:${res.allowed}`;
+  let b = document.getElementById("samaBanner");
+  if(res.banner){ b.innerText=res.banner; b.style.display="block"; b.className = res.allowed ? "banner warn" : "banner block"; }
+  else b.style.display="none";
+}
+showScreen(1);
+function goToDashboard(){ window.location="dashboard.html"; }
+async function testForgot(){ let r=await checkSAMA_PreLogin("ForgotPassword","HARD"); if(!r.allowed) alert(r.banner); else alert("Allowed - Real GPS"); }
+</script>
+</body>
+</html>
