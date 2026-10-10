@@ -1,62 +1,35 @@
-// SAMA LIVE GPS - REAL LOCATION
-let isFakeMode = false;
-let realLat = 0, realLng = 0;
-
-function getLiveLocation() {
-  if (navigator.geolocation) {
+// ===== SAMA PRE-LOGIN LIVE - SOFT Warning =====
+async function getRealGPS_Pre() {
+  return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        realLat = pos.coords.latitude;
-        realLng = pos.coords.longitude;
-        let acc = pos.coords.accuracy;
-        
-        // SAMA LOGIC - LIVE DETECTION
-        let risk = 100;
-        let isMock = false;
-        
-        // 1. Check accuracy - Fake GPS ka accuracy 0 ya >100 hota hai
-        if (acc === 0 || acc > 100) {
-          isMock = true;
-          risk += 1000;
-        }
-        
-        // 2. Check if location outside KSA (Nigeria etc)
-        if (realLat < 15 || realLat > 33 || realLng < 33 || realLng > 56) {
-          isMock = true;
-          risk += 500;
-        }
-        
-        if (isFakeMode) { // Agar aap test karna chahte ho to
-          realLat = 9.0820; // Nigeria
-          realLng = 8.6753;
-          risk = 1110;
-          isMock = true;
-        }
-        
-        // Display
-        document.getElementById('gpsInfo').innerText = 
-          `Risk:${risk} Acc:${Math.round(acc)} Allowed:${!isMock || risk < 500} | Lat:${realLat.toFixed(4)} Lng:${realLng.toFixed(4)} ${isMock ? 'FAKE' : 'REAL'}`;
-        
-        if(isMock && risk >= 1000) {
-          document.getElementById('warningBox').innerHTML = 
-            `⚠️ SAMA WARNING (Splash): Fake GPS Risk ${risk} - Login ke baad BLOCK hoga`;
-          document.getElementById('warningBox').style.display = 'block';
-        }
-      },
-      (err) => {
-        document.getElementById('gpsInfo').innerText = `GPS Error: ${err.message} - Location permission ON karo`;
-      },
-      {enableHighAccuracy:true, timeout:10000}
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy }),
+      (err) => reject(err.message),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
-  }
+  });
 }
 
-function toggleFake() {
-  isFakeMode = !isFakeMode;
-  getLiveLocation();
-  document.getElementById('toggleBtn').innerText = `📍 Toggle Fake GPS (Current: ${isFakeMode ? 'FAKE (Nigeria)' : 'LIVE REAL'})`;
-}
+async function checkSAMA_PreLogin() {
+  let result = { risk: 100, accuracy: 10, allowed: true, banner: "" };
+  let isFake = localStorage.getItem("FAKE_GPS") === "1";
+  let liveText = document.getElementById("liveLocPre");
+  try {
+    let gps = await getRealGPS_Pre();
+    result.accuracy = Math.round(gps.acc);
+    let lat = gps.lat; let lng = gps.lng;
+    if(liveText) liveText.innerText = `📡 LIVE: ${lat.toFixed(4)}, ${lng.toFixed(4)} Acc:${result.accuracy}m`;
 
-// Auto call on load
-setTimeout(getLiveLocation, 1000);
-setInterval(getLiveLocation, 5000);
+    if (isFake) {
+      lat = 9.0820; lng = 8.6753; result.accuracy = 0; result.risk = 1110;
+      if(liveText) liveText.innerText = `📡 SIMULATED FAKE: ${lat.toFixed(4)}, ${lng.toFixed(4)} (Nigeria)`;
+      result.banner = `⚠️ SAMA WARNING Risk ${result.risk}: Suspicious Location ${lat.toFixed(4)} - Login ke baad BLOCK hoga`;
+      return result;
+    }
+    if (lat < 15 || lat > 33 || lng < 33 || lng > 56) result.risk += 500;
+    if (gps.acc === 0 || gps.acc > 100) result.risk += 1000;
+    
+    if (result.risk >= 500) result.banner = `⚠️ SAMA WARNING Risk ${result.risk} - Suspicious but Login ALLOWED (SOFT)`;
+    else result.banner = `✅ REAL Location ${lat.toFixed(4)}, ${lng.toFixed(4)} Acc:${result.accuracy}m - SAMA ALLOWED`;
+  } catch(e){ result.banner = `GPS Error: ${e}`; }
+  return result;
+}
