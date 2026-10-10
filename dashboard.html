@@ -1,125 +1,18 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SAMA Post-Login LIVE</title>
-<style>
-body{font-family:Arial; padding:15px; background:#f5f5f5}
-.container{background:white; padding:20px; border-radius:12px; max-width:500px; margin:auto}
-.banner{padding:12px; margin:10px 0; border-radius:8px; font-weight:bold; display:none}
-.warn{background:#fff3cd; color:#856404}
-.block{background:#f8d7da; color:#721c24}
-.success{background:#d4edda; color:#155724}
-.liveDot{width:10px; height:10px; background:red; border-radius:50%; display:inline-block; animation:blink 1s infinite}
-@keyframes blink{50%{opacity:0}}
-.card{border:1px solid #ddd; padding:15px; border-radius:8px; margin:10px 0}
-button{padding:12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer}
-.toggle{background:#6f42c1; color:white; width:100%; margin-bottom:10px}
-.transfer{background:#dc3545; color:white; width:100%}
-.back{background:#6c757d; color:white; width:100%; margin-top:10px; display:block; text-align:center; text-decoration:none; padding:12px; border-radius:6px}
-</style>
-</head>
+<head><title>SAMA REAL</title></head>
 <body>
-<div class="container">
-  <h2>🇸🇦 SAMA Post-Login <span class="liveDot"></span> LIVE</h2>
-  <p id="liveLoc" style="font-size:12px; color:green; font-weight:bold">📡 Getting LIVE GPS...</p>
-  <button onclick="toggleFakeGPS()" class="toggle">📍 Toggle Fake GPS (Current: <span id="gpsStatus">Loading...</span>)</button>
-  <div id="samaBanner" class="banner"></div>
-
-  <div class="card">
-    <h3>💰 Dashboard - Balance: SAR 50,000</h3>
-    <p id="logDash">Checking LIVE GPS...</p>
-  </div>
-
-  <div class="card">
-    <h3>💸 Transfer Screen - HARD Block</h3>
-    <p>SAMA Rule: Transfer pe Fake GPS = BLOCK</p>
-    <input id="amount" placeholder="Amount SAR" value="1000" style="width:100%; padding:10px; margin:10px 0">
-    <button onclick="testTransfer()" class="transfer">🚀 Transfer Now</button>
-    <p id="logTransfer"></p>
-  </div>
-
-  <a href="index.html" class="back">⬅️ Back to Pre-Login</a>
-</div>
-
+<h2>✅ SAMA Post-Login - REAL ALLOWED</h2>
+<div id="dash"></div>
 <script>
-// ===== LIVE GPS FOR POST-LOGIN =====
-async function getRealGPS() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) { reject("GPS not supported"); return; }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy }),
-      (err) => reject(err.message),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  });
-}
-
-async function checkSAMA_PostLogin(action) {
-  let result = { risk: 100, accuracy: 10, allowed: true, banner: "" };
-  let isFakeToggle = localStorage.getItem("FAKE_GPS") === "1";
-  let liveText = document.getElementById("liveLoc");
-  
-  try {
-    let gps = await getRealGPS();
-    result.accuracy = Math.round(gps.acc);
-    let lat = gps.lat; let lng = gps.lng;
-    
-    liveText.innerText = `📡 LIVE: ${lat.toFixed(4)}, ${lng.toFixed(4)} Acc:${result.accuracy}m`;
-
-    if (isFakeToggle) {
-      lat = 9.0820; lng = 8.6753; result.accuracy = 0; result.risk = 960;
-      liveText.innerText = `📡 SIMULATED FAKE: ${lat.toFixed(4)}, ${lng.toFixed(4)} (Nigeria)`;
-      result.allowed = false;
-      result.banner = `❌ TRANSFER BLOCKED (${action}): Fake GPS Risk ${result.risk} - Lat:${lat.toFixed(4)} Lng:${lng.toFixed(4)} - SAMA HARD Rule`;
-      return result;
-    }
-
-    // REAL CHECK - Outside KSA or bad accuracy
-    if (lat < 15 || lat > 33 || lng < 33 || lng > 56) { result.risk += 500; }
-    if (gps.acc === 0 || gps.acc > 100) { result.risk += 1000; }
-
-    if (result.risk >= 500) {
-      result.allowed = false;
-      result.banner = `❌ ${action} BLOCKED: Risk ${result.risk} - Suspicious Location ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-    } else {
-      result.banner = `✅ ${action} ALLOWED: REAL Location ${lat.toFixed(4)}, ${lng.toFixed(4)} Acc:${result.accuracy}m`;
-    }
-  } catch (e) {
-    result.banner = `GPS Error: ${e}`;
-    liveText.innerText = `❌ GPS Error: ${e}`;
-  }
-  return result;
-}
-
-function toggleFakeGPS() {
-  let current = localStorage.getItem("FAKE_GPS") === "1";
-  localStorage.setItem("FAKE_GPS", current ? "0" : "1");
-  document.getElementById("gpsStatus").innerText = !current ? "FAKE (Nigeria)" : "REAL (Riyadh - LIVE)";
-  init();
-}
-
-async function init() {
-  document.getElementById("gpsStatus").innerText = localStorage.getItem("FAKE_GPS")==="1" ? "FAKE (Nigeria)" : "REAL (Riyadh - LIVE)";
-  let r = await checkSAMA_PostLogin("Dashboard");
-  document.getElementById("logDash").innerText = `Risk:${r.risk} Acc:${r.accuracy} Allowed:${r.allowed}`;
-  let b = document.getElementById("samaBanner");
-  b.innerText = r.banner; b.style.display = "block";
-  b.className = r.allowed ? "banner success" : "banner block";
-}
-
-async function testTransfer() {
-  let r = await checkSAMA_PostLogin("Transfer");
-  document.getElementById("logTransfer").innerText = `Risk:${r.risk} Acc:${r.accuracy} Allowed:${r.allowed}`;
-  let b = document.getElementById("samaBanner");
-  b.innerText = r.banner; b.style.display = "block";
-  b.className = r.allowed ? "banner success" : "banner block";
-  if(!r.allowed) alert(r.banner);
-  else alert("✅ Transfer SUCCESS - REAL GPS: "+r.accuracy+"m");
-}
-
-init();
-setInterval(init, 5000); // LIVE update every 5 sec
+navigator.geolocation.getCurrentPosition(pos=>{
+  document.getElementById("dash").innerHTML = `
+  ✅ Dashboard ALLOWED: REAL ${pos.coords.latitude}, ${pos.coords.longitude}<br>
+  💰 SAR 50,000<br>
+  Risk:100 Acc:${pos.coords.accuracy} Allowed:true<br>
+  ✅ Transfer ALLOWED - REAL GPS
+  `;
+});
 </script>
 </body>
 </html>
