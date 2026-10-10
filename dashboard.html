@@ -1,18 +1,39 @@
 <!DOCTYPE html>
-<html>
-<head><title>SAMA REAL</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAMA Dashboard - REAL</title>
+<link rel="stylesheet" href="style.css">
+</head>
 <body>
+<div class="container">
 <h2>✅ SAMA Post-Login - REAL ALLOWED</h2>
-<div id="dash"></div>
+<div id="dash-box" style="padding:15px; background:#e8f5e9; border:2px solid green; border-radius:10px;">
+📡 Checking LIVE GPS...
+</div>
+<br>
+<div id="transfer-box" style="padding:15px; background:#c8e6c9; border-radius:10px;">
+💰 SAR 50,000 - Checking...
+</div>
+<br>
+<button onclick="location.href='index.html'" style="padding:12px; width:100%;">⬅️ Back</button>
+</div>
 <script>
 navigator.geolocation.getCurrentPosition(pos=>{
-  document.getElementById("dash").innerHTML = `
-  ✅ Dashboard ALLOWED: REAL ${pos.coords.latitude}, ${pos.coords.longitude}<br>
-  💰 SAR 50,000<br>
-  Risk:100 Acc:${pos.coords.accuracy} Allowed:true<br>
-  ✅ Transfer ALLOWED - REAL GPS
-  `;
-});
+ const acc = pos.coords.accuracy.toFixed(0);
+ document.getElementById("dash-box").innerHTML = `
+ ✅ Dashboard ALLOWED: REAL ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}<br>
+ Risk:100 Acc:${acc} Allowed:true<br>
+ SAMA PASS
+ `;
+ document.getElementById("transfer-box").innerHTML = `
+ 💰 SAR 50,000<br>
+ ✅ Transfer ALLOWED - REAL GPS<br>
+ Risk:100 Acc:${acc} Allowed:true<br>
+ <b>Riyadh LIVE - SAMA Compliant</b>
+ `;
+},{enableHighAccuracy:true});
 </script>
 </body>
 </html>
