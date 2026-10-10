@@ -1,13 +1,95 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SAB - Dashboard</title>
-<style>body{font-family:Segoe UI;background:#f5f5f5;margin:0;padding:20px}.card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:relative}.success{background:#d4edda;border:2px solid #28a745;padding:15px;border-radius:8px;color:#155724}.danger{background:#f8d7da;border:2px solid #dc3545;padding:15px;border-radius:8px;color:#721c24}.btn{width:100%;padding:12px;background:#004D40;color:white;border:none;border-radius:8px;font-weight:bold;margin-top:12px;cursor:pointer}.btn-back{background:#6c757d}.lang-switch{position:absolute;top:15px;right:15px}.lang-switch button{padding:6px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:bold}.active-lang{background:#004D40!important;color:white!important}.inactive-lang{background:#eee!important;color:#333!important}</style></head>
-<body><div class="card"><div class="lang-switch"><button id="btnEN" onclick="setLang('en')" class="active-lang">EN</button><button id="btnAR" onclick="setLang('ar')" class="inactive-lang">العربية</button></div>
-<h2 style="color:#004D40;margin-top:35px">SAB - Secure Dashboard</h2><div id="dashBox"></div>
-<button class="btn" onclick="location.href='index.html'" id="backBtn">⬅ Back to Security Check</button><button class="btn btn-back" onclick="localStorage.clear();location.href='index.html'" id="logoutBtn">Logout</button></div>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAB - Secure Dashboard</title>
+<style>
+body{font-family:Segoe UI;background:#f5f5f5;margin:0;padding:20px;}
+.card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:relative;min-height:320px;}
+.success{background:#d4edda;border:2px solid #28a745;padding:15px;border-radius:8px;color:#155724;margin-top:15px;line-height:1.6;}
+.danger{background:#f8d7da;border:2px solid #dc3545;padding:15px;border-radius:8px;color:#721c24;margin-top:15px;line-height:1.6;}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;font-weight:bold;margin-top:15px;cursor:pointer;}
+.btn-green{background:#004D40;color:white;}
+.btn-gray{background:#6c757d;color:white;}
+.lang{position:absolute;top:15px;right:15px;display:flex;gap:5px;}
+.lang button{padding:6px 14px;border:none;border-radius:5px;font-weight:bold;cursor:pointer;}
+.active{background:#004D40!important;color:white!important;}
+.inactive{background:#eee!important;color:#333!important;}
+.live-badge{font-size:11px;color:#28a745;background:#e8f5e9;padding:3px 8px;border-radius:10px;margin-left:8px;display:inline-block;}
+.status-line{min-height:20px;font-size:13px;color:#666;}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="lang"><button id="btnEN" onclick="setLang('en')" class="active">EN</button><button id="btnAR" onclick="setLang('ar')" class="inactive">العربية</button></div>
+<h2 style="color:#004D40;margin-top:40px;" id="title">SAB - Secure Dashboard</h2>
+<p id="status" class="status-line"></p>
+<div id="box">Loading...</div>
+<button class="btn btn-green" onclick="location.href='index.html'" id="backBtn">← Back to Security Check</button>
+<button class="btn btn-gray" onclick="logout()" id="logoutBtn">Logout</button>
+</div>
 <script>
-const i18n={en:{welcome:"Welcome - Clean Location",allAllowed:"All transactions allowed",risk:"Risk Score",location:"Location",mockBlocked:"High-Risk Transactions Blocked",mockReason:"Mock location detected - SAMA policy active",back:"⬅ Back to Security Check",logout:"Logout",noData:"No security data - Please run security check"},ar:{welcome:"مرحباً - موقع نظيف",allAllowed:"جميع المعاملات مسموحة",risk:"درجة المخاطر",location:"الموقع",mockBlocked:"تم حظر المعاملات عالية المخاطر",mockReason:"تم اكتشاف موقع وهمي - سياسة ساما نشطة",back:"⬅ العودة لفحص الأمان",logout:"تسجيل خروج",noData:"لا توجد بيانات"}};
-let currentLang=localStorage.getItem('sama_lang')||'en';
-function setLang(l){currentLang=l;localStorage.setItem('sama_lang',l);document.documentElement.dir=l==='ar'?'rtl':'ltr';document.getElementById('btnEN').className=l==='en'?'active-lang':'inactive-lang';document.getElementById('btnAR').className=l==='ar'?'active-lang':'inactive-lang';renderDash()}
-function renderDash(){const t=i18n[currentLang];const dStr=localStorage.getItem('sama_last_detection');const box=document.getElementById('dashBox');document.getElementById('backBtn').innerText=t.back;document.getElementById('logoutBtn').innerText=t.logout;if(!dStr){box.innerHTML=`<div class="danger">${t.noData}</div>`;return}const d=JSON.parse(dStr);if(d.isMock){box.innerHTML=`<div class="danger"><b>⚠️ ${t.mockBlocked}</b><br><br>🌍 ${t.location}: ${d.city}<br>${t.risk}: ${d.risk}<br><br>${t.mockReason}</div>`}else{box.innerHTML=`<div class="success"><b>✅ ${t.welcome}:<br>${d.city} - ${t.allAllowed}</b><br><br>🌍 ${t.location}: ${d.city}<br>${t.risk}: ${d.risk}<br>✅ SAMA Compliant</div>`}}
+const i18n={
+en:{title:"SAB - Secure Dashboard",blocked:"⚠️ High-Risk Transactions Blocked",allowed:"✅ Low-Risk - Transactions Allowed",loc:"🌍 Location:",risk:"Risk Score:",mock:"Mock location detected - SAMA policy active",clean:"Clean location - SAMA compliant",back:"← Back to Security Check",logout:"Logout",live:"LIVE AUTO",checking:"📡 Checking location..."},
+ar:{title:"SAB - لوحة التحكم الآمنة",blocked:"⚠️ تم حظر المعاملات عالية المخاطر",allowed:"✅ معاملات مسموحة - مخاطر منخفضة",loc:"🌍 الموقع:",risk:"مستوى المخاطر:",mock:"تم اكتشاف موقع وهمي - سياسة ساما نشطة",clean:"موقع نظيف - متوافق مع ساما",back:"← العودة لفحص الأمان",logout:"تسجيل خروج",live:"مباشر",checking:"📡 جاري فحص الموقع..."}
+};
+let currentLang=localStorage.getItem('sama_lang')||'en',lastLat=0,lastLon=0,watchId=null,lastData=null;
+
+async function getCity(lat,lon,lang){
+ try{
+  let r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${lang}`);
+  let d=await r.json();
+  return `${d.city||d.locality||''}, ${d.countryName||''}`.trim()||`${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+ }catch(e){return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;}
+}
+
+function render(d,city){
+ let t=i18n[currentLang];
+ document.getElementById('title').innerText=t.title;
+ document.getElementById('backBtn').innerText=t.back;
+ document.getElementById('logoutBtn').innerText=t.logout;
+ document.getElementById('status').innerHTML=`${t.checking} <span class="live-badge">● ${t.live} ${d.acc}m</span>`;
+ let html='';
+ if(d.isMock || d.risk>=900){
+   html=`<div class="danger"><b>${t.blocked}</b><br><br>${t.loc} ${city} <span class="live-badge">● ${t.live}</span><br>${t.risk} ${d.risk}<br><br>${t.mock}</div>`;
+ }else{
+   html=`<div class="success"><b>${t.allowed}</b><br><br>${t.loc} ${city} <span class="live-badge">● ${t.live}</span><br>${t.risk} ${d.risk}<br><br>${t.clean}</div>`;
+ }
+ document.getElementById('box').innerHTML=html;
+}
+
+async function startLive(){
+ let raw=localStorage.getItem('sama_last_detection');
+ if(raw){lastData=JSON.parse(raw); let city=await getCity(lastData.lat,lastData.lon,currentLang); render(lastData,city); lastLat=lastData.lat; lastLon=lastData.lon;}
+ if(watchId) navigator.geolocation.clearWatch(watchId);
+ watchId=navigator.geolocation.watchPosition(async pos=>{
+   let lat=pos.coords.latitude,lon=pos.coords.longitude,acc=Math.round(pos.coords.accuracy);
+   if(Math.abs(lat-lastLat)<0.00005 && Math.abs(lon-lastLon)<0.00005 && lastData) return;
+   lastLat=lat; lastLon=lon;
+   let inSaudi=(lat>=16.3&&lat<=32.1&&lon>=34.5&&lon<=55.6);
+   let isMock=false,risk=100;
+   if(acc<=2){isMock=true;risk=960;}else if(!inSaudi&&acc<=15){isMock=true;risk=960;}
+   lastData={lat,lon,acc,isMock,risk};
+   localStorage.setItem('sama_last_detection',JSON.stringify(lastData));
+   let city=await getCity(lat,lon,currentLang);
+   render(lastData,city);
+   localStorage.setItem('sama_last_detection',JSON.stringify({...lastData,city}));
+ },null,{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+}
+
+function setLang(l){
+ currentLang=l;
+ localStorage.setItem('sama_lang',l);
+ document.documentElement.dir=l==='ar'?'rtl':'ltr';
+ document.getElementById('btnEN').className=l==='en'?'active':'inactive';
+ document.getElementById('btnAR').className=l==='ar'?'active':'inactive';
+ if(lastData) getCity(lastData.lat,lastData.lon,currentLang).then(c=>render(lastData,c));
+ else startLive();
+}
+function logout(){localStorage.clear(); if(watchId) navigator.geolocation.clearWatch(watchId); location.href='index.html';}
 setLang(currentLang);
-</script></body></html>
+startLive();
+</script>
+</body>
+</html>
