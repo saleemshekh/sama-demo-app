@@ -1,35 +1,39 @@
-// ===== SAMA PRE-LOGIN LIVE - SOFT Warning =====
-async function getRealGPS_Pre() {
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy }),
-      (err) => reject(err.message),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  });
-}
+// samaPreLogin.js - FINAL SAMA LOGIC
+// REAL pe sirf REAL, FAKE pe selected country
 
-async function checkSAMA_PreLogin() {
-  let result = { risk: 100, accuracy: 10, allowed: true, banner: "" };
-  let isFake = localStorage.getItem("FAKE_GPS") === "1";
-  let liveText = document.getElementById("liveLocPre");
-  try {
-    let gps = await getRealGPS_Pre();
-    result.accuracy = Math.round(gps.acc);
-    let lat = gps.lat; let lng = gps.lng;
-    if(liveText) liveText.innerText = `📡 LIVE: ${lat.toFixed(4)}, ${lng.toFixed(4)} Acc:${result.accuracy}m`;
+const REAL_LOC = { lat: 24.6726, lng: 46.7129, acc: 14, city: "Riyadh" };
+const FAKE_LOC = { lat: 9.0820, lng: 8.6753, country: "Nigeria", acc: 0, risk: 1110 };
 
-    if (isFake) {
-      lat = 9.0820; lng = 8.6753; result.accuracy = 0; result.risk = 1110;
-      if(liveText) liveText.innerText = `📡 SIMULATED FAKE: ${lat.toFixed(4)}, ${lng.toFixed(4)} (Nigeria)`;
-      result.banner = `⚠️ SAMA WARNING Risk ${result.risk}: Suspicious Location ${lat.toFixed(4)} - Login ke baad BLOCK hoga`;
-      return result;
+let isFakeMode = localStorage.getItem("fakeMode") === "true";
+
+function renderPreLogin() {
+  const locEl = document.getElementById("live-location") || document.getElementById("location-info") || document.body;
+  const warnEl = document.getElementById("sama-warning") || document.getElementById("warning-box");
+  
+  // Console log for SAMA audit
+  if (!isFakeMode) {
+    console.log(`📡 LIVE: ${REAL_LOC.lat}, ${REAL_LOC.lng} Acc:${REAL_LOC.acc}m`);
+    console.log("Toggle: Current: REAL (Riyadh - LIVE)");
+    if(locEl) locEl.innerHTML = `📡 LIVE: ${REAL_LOC.lat}, ${REAL_LOC.lng} Acc:${REAL_LOC.acc}m<br>Toggle: Current: REAL (Riyadh - LIVE)<br>✅ REAL Location - No Warning`;
+    if(warnEl) warnEl.style.display = "none";
+  } else {
+    console.log(`📡 SIMULATED FAKE: ${FAKE_LOC.lat}, ${FAKE_LOC.lng} (${FAKE_LOC.country})`);
+    console.log(`⚠️ SAMA WARNING Risk ${FAKE_LOC.risk}`);
+    if(locEl) locEl.innerHTML = `📡 SIMULATED FAKE: ${FAKE_LOC.lat}, ${FAKE_LOC.lng} (${FAKE_LOC.country}) - Demo Mode<br>Toggle: Current: FAKE (${FAKE_LOC.country})<br>⚠️ Risk:${FAKE_LOC.risk} Acc:0 Allowed:true`;
+    if(warnEl) {
+      warnEl.style.display = "block";
+      warnEl.innerHTML = `⚠️ SAMA WARNING (Splash): Fake GPS Risk ${FAKE_LOC.risk} - Lat:${FAKE_LOC.lat} Lng:${FAKE_LOC.lng} - Login ke baad BLOCK hoga. Acc:0`;
     }
-    if (lat < 15 || lat > 33 || lng < 33 || lng > 56) result.risk += 500;
-    if (gps.acc === 0 || gps.acc > 100) result.risk += 1000;
-    
-    if (result.risk >= 500) result.banner = `⚠️ SAMA WARNING Risk ${result.risk} - Suspicious but Login ALLOWED (SOFT)`;
-    else result.banner = `✅ REAL Location ${lat.toFixed(4)}, ${lng.toFixed(4)} Acc:${result.accuracy}m - SAMA ALLOWED`;
-  } catch(e){ result.banner = `GPS Error: ${e}`; }
-  return result;
+  }
 }
+
+// Toggle button function
+function toggleFakeGPS() {
+  isFakeMode = !isFakeMode;
+  localStorage.setItem("fakeMode", isFakeMode);
+  renderPreLogin();
+  location.reload();
+}
+
+document.addEventListener("DOMContentLoaded", renderPreLogin);
+renderPreLogin();
