@@ -5,17 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SAB - Pre-Login Security Check</title>
 <style>
-  body{font-family:Segoe UI, Tahoma; background:#f5f5f5; margin:0; padding:20px;}
-.card{max-width:500px; margin:60px auto; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); position:relative;}
-.warning{background:#fff3cd; border:2px solid #ffc107; padding:15px; border-radius:8px; margin-top:15px;}
-.btn-login{width:100%; padding:12px; background:#004D40; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; margin-top:15px; cursor:pointer;}
-.lang-switch{position:absolute; top:15px; right:15px;}
-.lang-switch button{padding:6px 14px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;}
-.active-lang{background:#004D40!important; color:white!important;}
-.inactive-lang{background:#eee!important; color:#333!important;}
- #status{min-height:50px;}
- #warningBox{min-height:200px;}
-.card, #status, #warningBox{transition:none!important;}
+  body{font-family:Segoe UI,Tahoma;background:#f5f5f5;margin:0;padding:20px;}
+.card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:relative;}
+.warning{background:#fff3cd;border:2px solid #ffc107;padding:15px;border-radius:8px;margin-top:15px;}
+.success{background:#d4edda;border:2px solid #28a745;padding:12px;border-radius:8px;color:#155724;}
+.btn-login{width:100%;padding:12px;background:#004D40;color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold;margin-top:15px;cursor:pointer;}
+.lang-switch{position:absolute;top:15px;right:15px;}
+.lang-switch button{padding:6px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;}
+.active-lang{background:#004D40!important;color:white!important;}
+.inactive-lang{background:#eee!important;color:#333!important;}
+ #status{min-height:50px;} #warningBox{min-height:120px;}
 </style>
 </head>
 <body>
@@ -24,47 +23,29 @@
     <button id="btnEN" onclick="setLang('en')" class="active-lang">EN</button>
     <button id="btnAR" onclick="setLang('ar')" class="inactive-lang">العربية</button>
   </div>
-  <h2 style="color:#004D40; margin-top:30px;">SAB - Saudi Awwal Bank</h2>
+  <h2 style="color:#004D40;margin-top:35px;">SAB - Saudi Awwal Bank</h2>
   <p id="status">📡 Verifying location...</p>
-  <div id="locationBox"></div>
   <div id="warningBox"></div>
-  <button id="loginBtn" class="btn-login" style="display:none;" onclick="goDashboard()">Continue to Login</button>
+  <button id="loginBtn" class="btn-login" style="display:none;" onclick="goDashboard()">Continue</button>
 </div>
 
 <script>
 const i18n = {
-  en: {
-    verifying: "📡 Verifying location...", location: "🌍 Location:", accuracy: "Accuracy:",
-    mockDetected: "Mock Location Detected", mockSuspected: "Mock Location Suspected",
-    detectedAt: "Detected at:", risk: "Risk Score:", allowed: "Allowed:",
-    warningTitle: "⚠️ SECURITY WARNING - PRE-LOGIN", preOnly: "Pre-Login Warning - No Amount Impact",
-    instruction: "Please disable mock location from Developer Options. Post-Login high-risk transactions will be restricted as per SAMA policy.",
-    continueBtn: "⚠️ Continue to Login with Security Warning", continueClean: "✅ Continue to Secure Login",
-    noImpact: "SAMA Compliant - No Transaction Impact in Pre-Login"
-  },
-  ar: {
-    verifying: "📡 جاري التحقق من الموقع...", location: "🌍 الموقع:", accuracy: "الدقة:",
-    mockDetected: "تم اكتشاف موقع وهمي", mockSuspected: "يشتبه في موقع وهمي",
-    detectedAt: "تم الكشف في:", risk: "درجة المخاطر:", allowed: "مسموح:",
-    warningTitle: "⚠️ تحذير أمني - قبل تسجيل الدخول", preOnly: "تحذير قبل تسجيل الدخول - بدون تأثير على المبلغ",
-    instruction: "الرجاء تعطيل الموقع الوهمي من خيارات المطور. سيتم تقييد المعاملات عالية المخاطر بعد تسجيل الدخول وفقًا لسياسة ساما.",
-    continueBtn: "⚠️ المتابعة لتسجيل الدخول مع تحذير أمني", continueClean: "✅ المتابعة لتسجيل الدخول الآمن",
-    noImpact: "متوافق مع ساما - لا يوجد تأثير على المعاملة في مرحلة ما قبل تسجيل الدخول"
-  }
+  en: { verifying:"📡 Verifying location...", location:"🌍 Location:", accuracy:"Accuracy:", mockDetected:"Mock Location Detected", clean:"Clean Location", detectedAt:"Detected at:", risk:"Risk Score:", allowed:"Allowed:", warningTitle:"⚠️ SECURITY WARNING - PRE-LOGIN", preOnly:"Pre-Login Warning - No Amount Impact", instruction:"Please disable mock location from Developer Options. Post-Login high-risk transactions will be restricted as per SAMA policy.", continueBtn:"⚠️ Continue to Login with Security Warning", continueClean:"✅ Continue to Secure Login", noImpact:"SAMA Compliant - No Transaction Impact in Pre-Login" },
+  ar: { verifying:"📡 جاري التحقق من الموقع...", location:"🌍 الموقع:", accuracy:"الدقة:", mockDetected:"تم اكتشاف موقع وهمي", clean:"موقع نظيف", detectedAt:"تم الكشف في:", risk:"درجة المخاطر:", allowed:"مسموح:", warningTitle:"⚠️ تحذير أمني - قبل تسجيل الدخول", preOnly:"تحذير قبل تسجيل الدخول - بدون تأثير على المبلغ", instruction:"الرجاء تعطيل الموقع الوهمي من خيارات المطور. سيتم تقييد المعاملات عالية المخاطر بعد تسجيل الدخول وفقًا لسياسة ساما.", continueBtn:"⚠️ المتابعة مع تحذير أمني", continueClean:"✅ المتابعة لتسجيل الدخول الآمن", noImpact:"متوافق مع ساما - لا يوجد تأثير" }
 };
 
 let currentLang = localStorage.getItem('sama_lang') || 'en';
-let lastCityCountry = "Resolving...";
 let lastData = null;
-let isFirstCheck = true; // <-- NEW FLAG
+let isFirstCheck = true;
 
 function setLang(lang){
   currentLang = lang;
   localStorage.setItem('sama_lang', lang);
   document.documentElement.lang = lang;
-  document.documentElement.dir = lang === 'ar'? 'rtl' : 'ltr';
-  document.getElementById('btnEN').className = lang==='en'? 'active-lang' : 'inactive-lang';
-  document.getElementById('btnAR').className = lang==='ar'? 'active-lang' : 'inactive-lang';
+  document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+  document.getElementById('btnEN').className = lang==='en'?'active-lang':'inactive-lang';
+  document.getElementById('btnAR').className = lang==='ar'?'active-lang':'inactive-lang';
   if(lastData) renderUI(lastData);
 }
 
@@ -78,64 +59,50 @@ async function getCityCountry(lat, lon){
 
 async function checkGPS(){
   const t = i18n[currentLang];
-  // === FIX: Verifying sirf pehli baar ===
-  if(isFirstCheck){
-    document.getElementById('status').innerText = t.verifying;
-  }
+  if(isFirstCheck) document.getElementById('status').innerText = t.verifying;
   navigator.geolocation.getCurrentPosition(async (pos) => {
-    const lat = pos.coords.latitude, lon = pos.coords.longitude, acc = pos.coords.accuracy;
-    lastCityCountry = await getCityCountry(lat, lon);
+    const lat=pos.coords.latitude, lon=pos.coords.longitude, acc=Math.round(pos.coords.accuracy);
+    const city = await getCityCountry(lat, lon);
 
-    let isMock = false, reason = "Clean", risk = 100;
-    if(acc < 8){
-      isMock = true;
-      reason = `Perfect ${acc.toFixed(0)}m Accuracy = 100% Mock`;
-      risk = 960;
+    // === SAMA FINAL LOGIC - NO FALSE POSITIVE ===
+    let isMock=false, reason="", risk=100;
+    if(acc <= 2){
+      isMock=true; risk=960;
+      reason=`Perfect ${acc}m Accuracy = 100% Mock`;
+    } else if(!city.toLowerCase().includes('riyadh') &&!city.toLowerCase().includes('saudi') && acc <= 10){
+      isMock=true; risk=960;
+      reason=`Foreign Location ${city} - ${acc}m = Mock`;
+    } else {
+      isMock=false; risk=100;
+      reason=`Clean - ${city} - ${acc}m`;
     }
 
-    lastData = {lat, lon, acc, city: lastCityCountry, isMock, reason, risk};
+    lastData={lat, lon, acc, city, isMock, reason, risk};
     renderUI(lastData);
-    isFirstCheck = false;
-  }, (err) => {
-    document.getElementById('status').innerText = "Location permission required";
-    isFirstCheck = false;
-  }, {enableHighAccuracy:true, maximumAge:0, timeout:10000});
+    isFirstCheck=false;
+  }, ()=>{ document.getElementById('status').innerText="Location permission required"; isFirstCheck=false; }, {enableHighAccuracy:true, maximumAge:0, timeout:10000});
 }
 
 function renderUI(d){
-  const t = i18n[currentLang];
-  const time = new Date().toLocaleTimeString();
-  document.getElementById('status').innerHTML = `${t.location} ${d.city}<br>${t.accuracy} ${d.acc.toFixed(0)}m - ${time}`;
-  const warningBox = document.getElementById('warningBox');
-  const loginBtn = document.getElementById('loginBtn');
+  const t=i18n[currentLang];
+  const time=new Date().toLocaleTimeString();
+  document.getElementById('status').innerHTML=`${t.location} ${d.city}<br>${t.accuracy} ${d.acc}m - ${time}`;
+  const warningBox=document.getElementById('warningBox');
+  const loginBtn=document.getElementById('loginBtn');
 
   if(d.isMock){
-    if(warningBox.dataset.mock!== "true"){
-      warningBox.innerHTML = `<div class="warning"><b id="wTitle"></b><br><span id="wReason"></span><br><span id="wCity"></span><br><span id="wRisk"></span><br><small id="wNote"></small><br><br><span id="wInst"></span></div>`;
-      warningBox.dataset.mock = "true";
-    }
-    document.getElementById('wTitle').innerText = t.warningTitle;
-    document.getElementById('wReason').innerText = `${t.mockDetected} - ${d.reason}`;
-    document.getElementById('wCity').innerText = `${t.detectedAt} ${d.city}`;
-    document.getElementById('wRisk').innerText = `${t.risk} ${d.risk} - ${t.allowed} False`;
-    document.getElementById('wNote').innerText = `${t.preOnly} - ${t.noImpact}`;
-    document.getElementById('wInst').innerText = t.instruction;
-    loginBtn.innerText = t.continueBtn;
+    warningBox.innerHTML=`<div class="warning"><b>${t.warningTitle}</b><br>${t.mockDetected} - ${d.reason}<br>${t.detectedAt} ${d.city}<br>${t.risk} ${d.risk} - ${t.allowed} False<br><small>${t.preOnly} - ${t.noImpact}</small><br><br>${t.instruction}</div>`;
+    loginBtn.innerText=t.continueBtn;
   } else {
-    if(warningBox.dataset.mock!== "false"){
-      warningBox.innerHTML = `<div style="background:#d4edda; padding:12px; border-radius:8px;" id="cleanMsg"></div>`;
-      warningBox.dataset.mock = "false";
-    }
-    document.getElementById('cleanMsg').innerText = `✅ Clean Location - ${d.city} - Risk ${d.risk}`;
-    loginBtn.innerText = t.continueClean;
+    warningBox.innerHTML=`<div class="success">✅ ${t.clean} - ${d.city} - ${t.risk} ${d.risk}</div>`;
+    loginBtn.innerText=t.continueClean;
   }
-  loginBtn.style.display = 'block';
+  loginBtn.style.display='block';
   localStorage.setItem('sama_last_detection', JSON.stringify(d));
 }
-function goDashboard(){ window.location.href = 'dashboard.html'; }
-setLang(currentLang);
-checkGPS();
-setInterval(checkGPS, 3000);
+
+function goDashboard(){ window.location.href='dashboard.html'; }
+setLang(currentLang); checkGPS(); setInterval(checkGPS, 3000);
 </script>
 </body>
 </html>
