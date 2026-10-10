@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAMA Secure - Pre-Login Security Check</title>
+<title>SAMA Secure - Pre-Login</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,40 +13,52 @@
 <br>
 <div id="warning-box" style="display:none; padding:12px; background:#fff8e1; border:2px solid #ffc107; border-radius:8px; color:#856404;"></div>
 <br>
-<button onclick="location.href='dashboard.html'" id="goBtn" style="padding:12px; background:black; color:white; width:100%; border-radius:8px; font-size:16px; display:none;">➡️ Continue to Login</button>
-<div style="font-size:11px;color:#888;margin-top:10px;text-align:center;">Continuous Monitoring: Active | Auto-Refresh: 3s | Performance Impact: None</div>
+<button onclick="location.href='dashboard.html'" id="goBtn" style="padding:12px; background:black; color:white; width:100%; border-radius:8px; font-size:16px; display:none;">➡️ Continue</button>
+<div style="font-size:11px;color:#888;margin-top:10px;text-align:center;">Continuous Monitoring: Active | Auto-Refresh: 3s | No Impact</div>
 </div>
 <script>
+let locName = "Resolving location...";
+async function getLocationName(lat,lon){
+ try{
+  const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+  const d = await r.json();
+  const city = d.city || d.locality || d.principalSubdivision || "";
+  const country = d.countryName || "";
+  locName = city ? `${city}, ${country}` : country;
+  return locName;
+ }catch{ return `${lat.toFixed(4)}, ${lon.toFixed(4)}`; }
+}
 function showWarningFake(lat,lon,acc,reason){
- const box=document.getElementById("live-box");
- box.style.background="#fff3e0"; box.style.border="2px solid #ff9800";
- box.innerHTML=`⚠️ <b>SAMA WARNING: Suspicious Location Detected - Pre-Login</b><br>📍 ${lat.toFixed(4)}, ${lon.toFixed(4)} Accuracy:${acc}m<br>Reason: ${reason}<br><b>Risk Score: 960 - Pre-Login Warning</b><br>Country Independent<br><small>${new Date().toLocaleTimeString()} - Auto</small>`;
+ getLocationName(lat,lon).then(name=>{
+  document.getElementById("live-box").style.background="#fff3e0";
+  document.getElementById("live-box").style.border="2px solid #ff9800";
+  document.getElementById("live-box").innerHTML=`⚠️ <b>SAMA WARNING: Suspicious Location Detected - Pre-Login</b><br>📍 ${lat.toFixed(4)}, ${lon.toFixed(4)} Accuracy:${acc}m<br>🌍 Location: <b>${name}</b><br>Reason: ${reason}<br><b>Risk Score: 960 - Pre-Login Warning</b><br>Country Independent Detection<br><small>${new Date().toLocaleTimeString()} - Auto</small>`;
+  document.getElementById("warning-box").innerHTML=`⚠️ <b>SECURITY WARNING - PRE-LOGIN</b><br>Mock Location Detected (Accuracy:${acc}m)<br>Reason: ${reason}<br>🌍 Detected: <b>${name}</b><br>Please disable mock location to proceed securely.<br>Post-Login high-risk transactions will be restricted as per SAMA policy.<br>Risk Score: 960 - Advisory Warning`;
+ });
  document.getElementById("warning-box").style.display="block";
- document.getElementById("warning-box").innerHTML=`⚠️ <b>SECURITY WARNING - PRE-LOGIN</b><br>Mock Location Detected (Accuracy:${acc}m)<br>Reason: ${reason}<br>Please disable mock location applications to proceed securely.<br>Post-Login high-risk transactions will be restricted as per SAMA policy.<br>Risk Score: 960 - Advisory Warning`;
  const b=document.getElementById("goBtn"); b.style.display="block"; b.style.background="#ff9800"; b.innerText="⚠️ Continue to Login with Security Warning";
 }
 function showReal(lat,lon,acc){
- const box=document.getElementById("live-box");
- box.style.background="#e8f5e9"; box.style.border="2px solid green";
- box.innerHTML=`📡 LIVE: ${lat.toFixed(4)}, ${lon.toFixed(4)} Accuracy:${acc}m<br>✅ Verified Real Location - Riyadh<br><b>Risk Score: 100 - Allowed: True</b><br>${new Date().toLocaleTimeString()} - SAMA PASS`;
+ getLocationName(lat,lon).then(name=>{
+  document.getElementById("live-box").style.background="#e8f5e9";
+  document.getElementById("live-box").style.border="2px solid green";
+  document.getElementById("live-box").innerHTML=`📡 LIVE: ${lat.toFixed(4)}, ${lon.toFixed(4)} Accuracy:${acc}m<br>✅ Verified Real Location<br>🌍 Location: <b>${name}</b><br><b>Risk Score: 100 - Allowed: True</b><br>${new Date().toLocaleTimeString()} - SAMA PASS`;
+ });
  document.getElementById("warning-box").style.display="none";
- const btn=document.getElementById("goBtn"); btn.style.display="block"; btn.style.background="green"; btn.innerText="✅ Proceed to Login - Verification PASSED";
+ const btn=document.getElementById("goBtn"); btn.style.display="block"; btn.style.background="green"; btn.innerText="✅ Proceed to Login - PASSED";
 }
 function checkGPS(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-   const lat=pos.coords.latitude, lon=pos.coords.longitude;
-   const acc=Math.round(pos.coords.accuracy);
-   const alt=pos.coords.altitude, speed=pos.coords.speed;
-   let isFake=false, reason="";
-   if(acc<=5){ isFake=true; reason=`Abnormally low accuracy (${acc}m) - Mock suspected`; }
-   else if(acc===0){ isFake=true; reason=`Zero accuracy (0m) - Mock confirmed`; }
-   else if(alt===null && speed===null && acc<12){ isFake=true; reason=`Missing altitude/speed with low accuracy ${acc}m`; }
-   if(isFake) showWarningFake(lat,lon,acc,reason); else showReal(lat,lon,acc);
-  }, err=>{ document.getElementById("live-box").innerHTML="❌ Location Permission Required: "+err.message; }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+ navigator.geolocation.getCurrentPosition(p=>{
+  const lat=p.coords.latitude, lon=p.coords.longitude, acc=Math.round(p.coords.accuracy);
+  const alt=p.coords.altitude, speed=p.coords.speed;
+  let fake=false, reason="";
+  if(acc<=5){ fake=true; reason=`Abnormally low accuracy (${acc}m) - Mock suspected`; }
+  else if(acc===0){ fake=true; reason=`Zero accuracy (0m) - Mock confirmed`; }
+  else if(alt===null && speed===null && acc<12){ fake=true; reason=`Missing altitude/speed with low accuracy ${acc}m`; }
+  if(fake) showWarningFake(lat,lon,acc,reason); else showReal(lat,lon,acc);
+ }, e=>{ document.getElementById("live-box").innerHTML="❌ Permission Required: "+e.message; }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
 }
-checkGPS();
-setInterval(checkGPS, 3000);
-document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) checkGPS(); });
+checkGPS(); setInterval(checkGPS,3000);
 </script>
 </body>
 </html>
