@@ -3,28 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAMA Post-Login REAL</title>
+<title>SAMA Post-Login BLOCK</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-<h2>✅ SAMA Post-Login - REAL ALLOWED</h2>
-<div id="a" style="padding:15px;background:#e8f5e9;border:2px solid green;border-radius:10px;">📡 LIVE...</div>
+<h2>💰 Post-Login - SAR 50,000 Transfer</h2>
+<div id="post-box" style="padding:15px; border-radius:10px; background:#fff3e0; border:2px solid orange;">
+📡 Checking Post-Login GPS...
+</div>
 <br>
-<div id="b" style="padding:15px;background:#c8e6c9;border-radius:10px;">💰 SAR 50,000</div>
-<br>
-<button onclick="location.href='index.html'" style="padding:12px;background:black;color:white;width:100%;border-radius:8px;">⬅️ Back</button>
+<div id="transfer-box" style="padding:20px; border-radius:10px; text-align:center; font-size:18px; font-weight:bold;">
+Checking...
+</div>
 </div>
 <script>
-function ok(p){
- let acc=Math.round(p.coords.accuracy);
- document.getElementById("a").innerHTML=`✅ REAL ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}<br>Risk:100 Acc:${acc} Allowed:true<br>${new Date().toLocaleTimeString()} - SAMA PASS`;
- document.getElementById("b").innerHTML=`💰 SAR 50,000<br>✅ Transfer ALLOWED<br>Risk:100 Acc:${acc} Allowed:true<br>Riyadh LIVE - REAL GPS`;
+function showBlock(lat,lon,acc,reason){
+ document.getElementById("post-box").style.background="#ffebee";
+ document.getElementById("post-box").style.border="2px solid red";
+ document.getElementById("post-box").innerHTML=`
+  🚫 <b>POST-LOGIN BLOCK - FAKE DETECTED</b><br>
+  📍 ${lat.toFixed(4)}, ${lon.toFixed(4)} Acc:${acc}m<br>
+  Reason: ${reason}<br>
+  <b>Risk:960 Allowed:false</b><br>
+  SAMA BLOCK - Any Country
+ `;
+ const t=document.getElementById("transfer-box");
+ t.style.background="#ffcdd2"; t.style.color="red"; t.style.border="2px solid red";
+ t.innerHTML=`
+  💰 SAR 50,000<br><br>
+  🚫 TRANSFER BLOCKED<br>
+  Fake GPS ON hai - Country koi bhi ho<br>
+  Risk:960<br>
+  <span style="font-size:14px;">Please disable Mock Location</span>
+ `;
 }
-function fail(e){
- document.getElementById("a").innerHTML=`❌ Allow Location: Chrome top me 🔒 > Location > Allow > Refresh<br>${e.message}`;
+function showAllow(lat,lon,acc){
+ document.getElementById("post-box").style.background="#e8f5e9";
+ document.getElementById("post-box").style.border="2px solid green";
+ document.getElementById("post-box").innerHTML=`
+  ✅ LIVE REAL: ${lat.toFixed(4)}, ${lon.toFixed(4)} Acc:${acc}m<br>
+  ✅ REAL Location - Riyadh<br>
+  <b>Risk:100 Acc:${acc} Allowed:true</b><br>
+  SAMA PASS - ALLOWED
+ `;
+ const t=document.getElementById("transfer-box");
+ t.style.background="#c8e6c9"; t.style.color="green"; t.style.border="2px solid green";
+ t.innerHTML=`
+  💰 SAR 50,000<br><br>
+  ✅ TRANSFER ALLOWED<br>
+  Risk:100 Acc:${acc}m Allowed:true<br>
+  <span style="font-size:14px;">Real GPS - SAMA PASS</span>
+ `;
 }
-navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+navigator.geolocation.getCurrentPosition(pos=>{
+ const lat=pos.coords.latitude, lon=pos.coords.longitude;
+ const acc=Math.round(pos.coords.accuracy);
+ const alt=pos.coords.altitude, speed=pos.coords.speed;
+ let isFake=false, reason="";
+ if(acc<=5){ isFake=true; reason=`Acc too low (${acc}m) - Fake app`; }
+ else if(acc===0){ isFake=true; reason=`Acc 0m - Mock`; }
+ else if(alt===null && speed===null && acc<12){ isFake=true; reason=`No altitude/speed + Acc ${acc}m`; }
+ if(isFake) showBlock(lat,lon,acc,reason);
+ else showAllow(lat,lon,acc);
+}, err=>{
+ document.getElementById("post-box").innerHTML="❌ GPS Error: "+err.message;
+}, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
 </script>
 </body>
 </html>
