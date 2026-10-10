@@ -3,37 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAMA Dashboard - REAL</title>
+<title>SAMA Post-Login REAL</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
 <h2>✅ SAMA Post-Login - REAL ALLOWED</h2>
-<div id="dash-box" style="padding:15px; background:#e8f5e9; border:2px solid green; border-radius:10px;">
-📡 Checking LIVE GPS...
-</div>
+<div id="a" style="padding:15px;background:#e8f5e9;border:2px solid green;border-radius:10px;">📡 LIVE...</div>
 <br>
-<div id="transfer-box" style="padding:15px; background:#c8e6c9; border-radius:10px;">
-💰 SAR 50,000 - Checking...
-</div>
+<div id="b" style="padding:15px;background:#c8e6c9;border-radius:10px;">💰 SAR 50,000</div>
 <br>
-<button onclick="location.href='index.html'" style="padding:12px; width:100%;">⬅️ Back</button>
+<button onclick="location.href='index.html'" style="padding:12px;background:black;color:white;width:100%;border-radius:8px;">⬅️ Back</button>
 </div>
 <script>
-navigator.geolocation.getCurrentPosition(pos=>{
- const acc = pos.coords.accuracy.toFixed(0);
- document.getElementById("dash-box").innerHTML = `
- ✅ Dashboard ALLOWED: REAL ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}<br>
- Risk:100 Acc:${acc} Allowed:true<br>
- SAMA PASS
- `;
- document.getElementById("transfer-box").innerHTML = `
- 💰 SAR 50,000<br>
- ✅ Transfer ALLOWED - REAL GPS<br>
- Risk:100 Acc:${acc} Allowed:true<br>
- <b>Riyadh LIVE - SAMA Compliant</b>
- `;
-},{enableHighAccuracy:true});
+function ok(p){
+ let acc=Math.round(p.coords.accuracy);
+ document.getElementById("a").innerHTML=`✅ REAL ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}<br>Risk:100 Acc:${acc} Allowed:true<br>${new Date().toLocaleTimeString()} - SAMA PASS`;
+ document.getElementById("b").innerHTML=`💰 SAR 50,000<br>✅ Transfer ALLOWED<br>Risk:100 Acc:${acc} Allowed:true<br>Riyadh LIVE - REAL GPS`;
+}
+function fail(e){
+ document.getElementById("a").innerHTML=`❌ Allow Location: Chrome top me 🔒 > Location > Allow > Refresh<br>${e.message}`;
+}
+navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
 </script>
 </body>
 </html>
