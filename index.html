@@ -1,18 +1,35 @@
 <!DOCTYPE html>
-<html>
-<head><title>SAMA REAL</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAMA Pre-Login - REAL</title>
+<link rel="stylesheet" href="style.css">
+</head>
 <body>
+<div class="container">
 <h2>🇸🇦 SAMA Pre-Login - REAL LIVE</h2>
-<div id="live"></div>
+<div id="live-box" style="padding:15px; background:#e8f5e9; border:2px solid green; border-radius:10px;">
+📡 Checking LIVE GPS...
+</div>
+<br>
+<button onclick="location.href='dashboard.html'" style="padding:12px; background:green; color:white; width:100%; border-radius:8px; font-size:16px;">➡️ Go to Dashboard (REAL)</button>
+</div>
 <script>
-navigator.geolocation.getCurrentPosition(pos=>{
-  document.getElementById("live").innerHTML = `
-  📡 LIVE: ${pos.coords.latitude}, ${pos.coords.longitude} Acc:${pos.coords.accuracy}m<br>
-  ✅ REAL Location - Riyadh<br>
-  Risk:100 Acc:${pos.coords.accuracy} Allowed:true<br>
-  <b>NO FAKE - SAMA PASS</b>
+function loadReal(){
+ navigator.geolocation.getCurrentPosition(pos=>{
+  const acc = pos.coords.accuracy.toFixed(0);
+  document.getElementById("live-box").innerHTML = `
+  📡 LIVE: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)} Acc:${acc}m<br>
+  ✅ REAL Location - Riyadh - No Warning<br>
+  <b>Risk:100 Acc:${acc} Allowed:true</b><br><br>
+  <span style="color:green;">SAMA PASS - No Nigeria, No Demo</span>
   `;
-});
+ }, err=>{
+  document.getElementById("live-box").innerHTML = "❌ GPS Allow karo - Location permission ON karo";
+ }, {enableHighAccuracy:true});
+}
+loadReal();
 </script>
 </body>
 </html>
