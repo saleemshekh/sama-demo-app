@@ -1,48 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><title>SAB - Dashboard</title>
-<style>body{font-family:Segoe UI; background:#f5f5f5; padding:20px;}.card{max-width:600px; margin:40px auto; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);}.block{background:#f8d7da; border:2px solid #dc3545; padding:20px; border-radius:10px;}</style>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAB - Secure Dashboard</title>
+<style>
+  body{font-family:Segoe UI,Tahoma;background:#f5f5f5;margin:0;padding:20px;}
+ .card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);}
+ .success{background:#d4edda;border:2px solid #28a745;padding:15px;border-radius:8px;color:#155724;}
+ .danger{background:#f8d7da;border:2px solid #dc3545;padding:15px;border-radius:8px;color:#721c24;}
+ .btn{width:100%;padding:12px;background:#004D40;color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold;margin-top:15px;cursor:pointer;}
+ .btn-back{background:#6c757d;margin-top:10px;}
+ .lang-switch{position:absolute;top:15px;right:15px;}
+ .lang-switch button{padding:6px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;}
+ .active-lang{background:#004D40!important;color:white!important;}
+ .inactive-lang{background:#eee!important;color:#333!important;}
+</style>
 </head>
 <body>
-<div class="card">
-<h2 style="color:#004D40;">SAB - Secure Dashboard</h2>
-<div id="dashBox">Loading...</div>
+<div class="card" style="position:relative;">
+  <div class="lang-switch">
+    <button id="btnEN" onclick="setLang('en')" class="active-lang">EN</button>
+    <button id="btnAR" onclick="setLang('ar')" class="inactive-lang">العربية</button>
+  </div>
+
+  <h2 style="color:#004D40;margin-top:35px;">SAB - Secure Dashboard</h2>
+  <div id="dashBox"></div>
+
+  <button class="btn" onclick="window.location.href='index.html'" id="backBtn">⬅ Back to Security Check</button>
+  <button class="btn btn-back" onclick="logout()" id="logoutBtn">Logout</button>
 </div>
+
 <script>
 const i18n = {
   en: {
-    blockedTitle: "🚫 POST-LOGIN SECURITY BLOCK",
-    amount: "Amount: SAR 50,000 BLOCKED",
-    reason: "Reason:", risk: "Risk Score:", location: "Location:", status: "Status: Transaction BLOCKED - SAMA Policy",
-    instruction: "Disable mock location from Developer Options and retry."
+    welcome: "Welcome - Clean Location",
+    allAllowed: "All transactions allowed",
+    risk: "Risk Score",
+    location: "Location",
+    mockBlocked: "High-Risk Transactions Blocked",
+    mockReason: "Mock location detected - SAMA policy active",
+    back: "⬅ Back to Security Check",
+    logout: "Logout",
+    noData: "No security data found - Please run security check again"
   },
   ar: {
-    blockedTitle: "🚫 حظر أمني - بعد تسجيل الدخول",
-    amount: "المبلغ: ٥٠٬٠٠٠ ريال محظور",
-    reason: "السبب:", risk: "درجة المخاطر:", location: "الموقع:", status: "الحالة: تم حظر المعاملة - سياسة ساما",
-    instruction: "قم بتعطيل الموقع الوهمي من خيارات المطور وحاول مرة أخرى."
+    welcome: "مرحباً - موقع نظيف",
+    allAllowed: "جميع المعاملات مسموحة",
+    risk: "درجة المخاطر",
+    location: "الموقع",
+    mockBlocked: "تم حظر المعاملات عالية المخاطر",
+    mockReason: "تم اكتشاف موقع وهمي - سياسة ساما نشطة",
+    back: "⬅ العودة لفحص الأمان",
+    logout: "تسجيل خروج",
+    noData: "لم يتم العثور على بيانات الأمان - الرجاء تشغيل فحص الأمان مرة أخرى"
   }
 };
-let lang = localStorage.getItem('sama_lang') || 'en';
-document.documentElement.lang = lang;
-document.documentElement.dir = lang==='ar'? 'rtl' : 'ltr';
-const t = i18n[lang];
-const d = JSON.parse(localStorage.getItem('sama_last_detection') || '{}');
 
-if(d.isMock){
-  document.getElementById('dashBox').innerHTML = `
-    <div class="block">
-      <h3>${t.blockedTitle}</h3>
-      <b style="font-size:18px;">${t.amount}</b><br><br>
-      ${t.location} ${d.city || 'Unknown'}<br>
-      ${t.reason} ${d.reason}<br>
-      ${t.risk} ${d.risk} - Allowed: False<br><br>
-      <b>${t.status}</b><br><br>
-      ${t.instruction}
-    </div>`;
-} else {
-  document.getElementById('dashBox').innerHTML = `<div style="background:#d4edda; padding:20px; border-radius:10px;">✅ Welcome - Clean Location: ${d.city} - All transactions allowed</div>`;
+let currentLang = localStorage.getItem('sama_lang') || 'en';
+
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem('sama_lang', lang);
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar'? 'rtl' : 'ltr';
+  document.getElementById('btnEN').className = lang==='en'? 'active-lang' : 'inactive-lang';
+  document.getElementById('btnAR').className = lang==='ar'? 'active-lang' : 'inactive-lang';
+  renderDash();
 }
+
+function renderDash(){
+  const t = i18n[currentLang];
+  const dataStr = localStorage.getItem('sama_last_detection');
+  const box = document.getElementById('dashBox');
+
+  document.getElementById('backBtn').innerText = t.back;
+  document.getElementById('logoutBtn').innerText = t.logout;
+
+  if(!dataStr){
+    box.innerHTML = `<div class="danger">${t.noData}</div>`;
+    return;
+  }
+
+  const d = JSON.parse(dataStr);
+
+  if(d.isMock){
+    box.innerHTML = `
+      <div class="danger">
+        <b>⚠️ ${t.mockBlocked}</b><br><br>
+        🌍 ${t.location}: ${d.city}<br>
+        ${t.risk}: ${d.risk}<br><br>
+        ${t.mockReason}<br><br>
+        <small>Allowed: False</small>
+      </div>`;
+  } else {
+    box.innerHTML = `
+      <div class="success">
+        <b>✅ ${t.welcome}:<br>${d.city} - ${t.allAllowed}</b><br><br>
+        🌍 ${t.location}: ${d.city}<br>
+        ${t.risk}: ${d.risk}<br>
+        ✅ SAMA Compliant
+      </div>`;
+  }
+}
+
+function logout(){
+  localStorage.removeItem('sama_last_detection');
+  window.location.href = 'index.html';
+}
+
+setLang(currentLang);
 </script>
 </body>
 </html>
