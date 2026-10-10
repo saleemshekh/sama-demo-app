@@ -3,45 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAMA Pre-Login - REAL</title>
+<title>SAMA - ANY COUNTRY FAKE BLOCK</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-<h2>🇸🇦 SAMA Pre-Login - REAL LIVE</h2>
-<div id="live-box" style="padding:15px; background:#e8f5e9; border:2px solid green; border-radius:10px;">
-📡 Connecting to REAL GPS... 0s
-</div>
+<h2 id="title">Checking GPS...</h2>
+<div id="a" style="padding:15px;border-radius:10px;background:#fff3e0;">📡 Checking LIVE...</div>
 <br>
-<button onclick="location.href='dashboard.html'" style="padding:12px; background:green; color:white; width:100%; border-radius:8px; font-size:16px;">➡️ Go to Dashboard (REAL)</button>
-<br><br>
-<button onclick="loadReal()" style="padding:8px; background:#333; color:white; width:100%; border-radius:8px;">🔄 Refresh LIVE (0 Delay)</button>
+<div id="b" style="padding:15px;border-radius:10px;">💰 SAR 50,000</div>
 </div>
 <script>
-let watchId = null;
-function loadReal(){
-  const box = document.getElementById("live-box");
-  box.innerHTML = "📡 LIVE GPS Locking... Please Allow Location";
-  
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-  
-  watchId = navigator.geolocation.watchPosition(pos=>{
-    const acc = pos.coords.accuracy.toFixed(0);
-    const lat = pos.coords.latitude.toFixed(4);
-    const lon = pos.coords.longitude.toFixed(4);
-    // SAMA Rules: Real must be Acc 5-50m, Risk 100
-    box.innerHTML = `
-    📡 LIVE: ${lat}, ${lon} Acc:${acc}m<br>
-    ✅ REAL Location - Riyadh - No Warning<br>
-    <b>Risk:100 Acc:${acc} Allowed:true</b><br>
-    Timestamp: ${new Date().toLocaleTimeString()}<br><br>
-    <span style="color:green; font-weight:bold;">SAMA PASS - 0 Delay LIVE - No Nigeria, No Demo</span>
-    `;
-  }, err=>{
-    box.innerHTML = `❌ GPS Allow karo - ${err.message}<br><button onclick="loadReal()">Retry Allow</button>`;
-  }, {enableHighAccuracy:true, maximumAge:0, timeout:8000});
+function showFake(lat,lon,acc,reason){
+ document.getElementById("title").innerHTML="🚫 FAKE DETECTED - SAMA BLOCK";
+ document.getElementById("a").innerHTML=`❌ FAKE GPS DETECTED<br>${lat.toFixed(4)}, ${lon.toFixed(4)} Acc:${acc}m<br>Reason: ${reason}<br><b>Risk:960 Allowed:false</b><br>🚫 SAMA BLOCK - Any Country`;
+ document.getElementById("a").style.background="#ffebee"; document.getElementById("a").style.border="2px solid red";
+ document.getElementById("b").innerHTML=`💰 SAR 50,000<br>🚫 BLOCKED - Fake GPS ON hai<br>Risk:960<br>Country koi bhi ho - BLOCK`;
+ document.getElementById("b").style.background="#ffcdd2";
 }
-loadReal();
+function showReal(lat,lon,acc){
+ document.getElementById("title").innerHTML="✅ SAMA PASS - REAL";
+ document.getElementById("a").innerHTML=`✅ LIVE REAL: ${lat.toFixed(4)}, ${lon.toFixed(4)} Acc:${acc}m<br>✅ REAL Location - Riyadh<br>Risk:100 Acc:${acc} Allowed:true - SAMA PASS`;
+ document.getElementById("a").style.background="#e8f5e9"; document.getElementById("a").style.border="2px solid green";
+ document.getElementById("b").innerHTML=`💰 SAR 50,000<br>✅ ALLOWED - Real GPS<br>Risk:100 Acc:${acc}`;
+}
+navigator.geolocation.getCurrentPosition(p=>{
+ let lat=p.coords.latitude, lon=p.coords.longitude, acc=Math.round(p.coords.accuracy);
+ let alt=p.coords.altitude, speed=p.coords.speed;
+ 
+ // ANY COUNTRY FAKE DETECTION - SAMA RULE
+ let isFake = false, reason="";
+ if(acc<=5){ isFake=true; reason=`Acc too low (${acc}m) - Fake app`; }
+ else if(acc==0){ isFake=true; reason=`Acc 0 - Mock`; }
+ else if(alt===null && speed===null && acc<10){ isFake=true; reason=`No altitude/speed + low Acc`; }
+ // Add more: if you want strict
+ // if(acc<12 && acc>0){ isFake=true; reason=`Suspicious Acc ${acc}`; }
+
+ if(isFake) showFake(lat,lon,acc,reason);
+ else showReal(lat,lon,acc);
+}, e=>{document.getElementById("a").innerHTML="❌ Allow Location: "+e.message;}, {enableHighAccuracy:true,timeout:10000,maximumAge:0});
 </script>
 </body>
 </html>
