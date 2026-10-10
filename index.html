@@ -3,38 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAB - Pre-Login Security Check</title>
+<title>SAB - Saudi Awwal Bank</title>
 <style>
-  body{font-family:Segoe UI,Tahoma;background:#f5f5f5;margin:0;padding:20px;}
-  .card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:relative;}
-  .warning{background:#fff3cd;border:2px solid #ffc107;padding:15px;border-radius:8px;margin-top:15px;color:#856404;line-height:1.6;}
-  .success{background:#d4edda;border:2px solid #28a745;padding:15px;border-radius:8px;color:#155724;margin-top:15px;line-height:1.6;}
-  .danger{background:#f8d7da;border:2px solid #dc3545;padding:15px;border-radius:8px;color:#721c24;margin-top:15px;}
-  .btn-login{width:100%;padding:14px;background:#004D40;color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold;margin-top:15px;cursor:pointer;}
-  .lang-switch{position:absolute;top:15px;right:15px;display:flex;gap:5px;}
-  .lang-switch button{padding:6px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;}
-  .active-lang{background:#004D40!important;color:white!important;}
-  .inactive-lang{background:#eee!important;color:#333!important;}
-  #status{min-height:40px;font-size:14px;margin-top:20px;}
-  #warningBox{min-height:140px;}
+body{font-family:Segoe UI;background:#f5f5f5;margin:0;padding:20px;}
+.card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:relative;}
+.success{background:#d4edda;border:2px solid #28a745;padding:15px;border-radius:8px;color:#155724;margin-top:15px;}
+.warning{background:#fff3cd;border:2px solid #ffc107;padding:15px;border-radius:8px;margin-top:15px;color:#856404;}
+.btn{width:100%;padding:14px;background:#004D40;color:white;border:none;border-radius:8px;font-weight:bold;margin-top:15px;}
+.lang{position:absolute;top:15px;right:15px;display:flex;gap:5px;}
+.lang button{padding:6px 14px;border:none;border-radius:5px;font-weight:bold;}
+.active{background:#004D40!important;color:white!important;}
+.inactive{background:#eee!important;color:#333!important;}
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="lang-switch">
-    <button id="btnEN" onclick="setLang('en')" class="active-lang">EN</button>
-    <button id="btnAR" onclick="setLang('ar')" class="inactive-lang">العربية</button>
-  </div>
-  <h2 style="color:#004D40;margin-top:40px;" id="title">SAB - Saudi Awwal Bank</h2>
-  <p id="status">📡 Verifying location...</p>
-  <div id="warningBox"></div>
-  <button id="loginBtn" class="btn-login" style="display:none;" onclick="goDashboard()">Continue</button>
-  <button id="retryBtn" class="btn-login" style="display:none;background:#ff9800;" onclick="location.reload()">🔄 Retry</button>
+<div class="lang"><button id="btnEN" onclick="setLang('en')" class="active">EN</button><button id="btnAR" onclick="setLang('ar')" class="inactive">العربية</button></div>
+<h2 style="color:#004D40;margin-top:40px;" id="title">SAB - Saudi Awwal Bank</h2>
+<p id="status">📡 Verifying...</p>
+<div id="box"></div>
+<button id="loginBtn" class="btn" style="display:none;" onclick="location.href='dashboard.html'">Continue</button>
+<button id="retryBtn" class="btn" style="display:none;background:#ff9800;" onclick="checkGPS()">🔄 Retry - Allow Location</button>
 </div>
-
 <script>
-const i18n = {
-  en: {
-    title: "SAB - Saudi Awwal Bank",
-    verifying: "📡 Verifying location... Please Allow",
-    location: "🌍
+const i18n={en:{title:"SAB - Saudi Awwal Bank",verifying:"📡 Verifying location... Please Allow",location:"🌍 Location:",accuracy:"Accuracy:",clean:"Clean location",risk:"Risk level:",all:"All Allowed - SAMA Compliant",mock:"Mock Location Detected",warn:"⚠️ SECURITY WARNING",perm:"❌ Location Blocked - Allow from 🔒 icon & turn ON GPS",btnClean:"✅ Safe follow-up",btnMock:"⚠️ Continue with Warning"},ar:{title:"SAB - البنك السعودي الأول",verifying:"📡 جاري التحقق... الرجاء السماح",location:"🌍 الموقع:",accuracy:"الدقة:",clean:"موقع نظيف",risk:"مستوى المخاطر:",all:"مسموح بالكامل - متوافق مع ساما",mock:"تم اكتشاف موقع وهمي",warn:"⚠️ تحذير أمني",perm:"❌ الموقع محظور - اسمح من 🔒 وشغل GPS",btnClean:"✅ متابعة آمنة",btnMock:"⚠️ المتابعة مع تحذير"}};
+let currentLang=localStorage.getItem('sama_lang')||'en',lastData=null,timer=null;
+async function getCity(lat,lon){try{let r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${currentLang}`);let d=await r.json();return `${d.city||d.locality||''}, ${d.countryName||''}`.trim()||`${lat.toFixed(4)}, ${lon.toFixed(4)}`;}catch(e){return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;}}
+function checkGPS(){let t=i18n[currentLang];document.getElementById('status').innerHTML="📡 Checking GPS... Allow popup";document.getElementById('box').innerHTML="";document.getElementById('loginBtn').style.display='none';document.getElementById('retryBtn').style.display='none';if(timer)clearTimeout(timer);timer=setTimeout(()=>{document.getElementById('status').innerHTML=t.perm;document.getElementById('box').innerHTML=`<div class="warning">1. 🔒 Lock icon > Location > Allow<br>2. GPS ON karo<br>3. Retry dabao</div>`;document.getElementById('retryBtn').style.display='block';},5000);navigator.geolocation.getCurrentPosition(async pos=>{clearTimeout(timer);let lat=pos.coords.latitude,lon=pos.coords.longitude,acc=Math.round(pos.coords.accuracy);let inSaudi=(lat>=16.3&&lat<=32.1&&lon>=34.5&&lon<=55.6);let isMock=false,risk=100;if(acc<=2){isMock=true;risk=960;}else if(!inSaudi&&acc<=15){isMock=true;risk=960;}lastData={lat,lon,acc,city:`${lat.toFixed(4)}, ${lon.toFixed(4)}`,isMock,risk,inSaudi};render(lastData);let city=await getCity(lat,lon);lastData.city=city;render(lastData);},err=>{clearTimeout(timer);document.getElementById('status').innerHTML=i18n[currentLang].perm+`<br><small>${err.message}</small>`;document.getElementById('retryBtn').style.display='block';},{enableHighAccuracy:false,maximumAge:30000,timeout:8000});}
+function render(d){let t=i18n[currentLang];document.getElementById('title').innerText=t.title;document.getElementById('status').innerHTML=`${t.location} ${d.city}<br>${t.accuracy} ${d.acc}m`;let box=document.getElementById('box'),btn=document.getElementById('loginBtn');if(d.isMock){box.innerHTML=`<div class="warning"><b>${t.warn}</b><br>${t.mock} - ${d.acc}m<br>${t.risk} ${d.risk}</div>`;btn.innerText=t.btnMock;}else{let msg=currentLang==='ar'?`✅ ${t.clean} - ${d.city} - ${t.risk} ${d.risk} - ${t.all}`:`✅ ${t.clean} - ${d.city} - ${t.risk} ${d.risk} - ${t.all}`;box.innerHTML=`<div class="success">${msg}</div>`;btn.innerText=t.btnClean;}btn.style.display='block';}
+function setLang(l){currentLang=l;localStorage.setItem('sama_lang',l);document.documentElement.dir=l==='ar'?'rtl':'ltr';document.getElementById('btnEN').className=l==='en'?'active':'inactive';document.getElementById('btnAR').className=l==='ar'?'active':'inactive';if(lastData){getCity(lastData.lat,lastData.lon).then(c=>{lastData.city=c;render(lastData);});}else{checkGPS();}document.getElementById('title').innerText=i18n[l].title;}
+setLang(currentLang);checkGPS();
+</script>
+</body>
+</html>
