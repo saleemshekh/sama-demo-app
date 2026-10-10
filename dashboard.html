@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>SAMA Post-Login</title>
+</head>
+<body>
+<div class="container">
+  <h2>🏦 Post-Login SAMA (3 Screens)</h2>
+  <div id="riskBadge"></div>
+
+  <div class="tabs">
+    <button onclick="showPost(1)" class="active">4. Dashboard</button>
+    <button onclick="showPost(2)">5. Transfer 1000</button>
+    <button onclick="showPost(3)">6. Transfer 5000</button>
+  </div>
+
+  <div id="post1" class="screen"><h3>Screen 4: Dashboard - Yellow Mode</h3><p>Balance: <span id="bal">SAR 25,000</span></p><p id="dashLog"></p></div>
+  
+  <div id="post2" class="screen" style="display:none">
+    <h3>Screen 5: Transfer SAR 1000 - HARD BLOCK</h3>
+    <div id="transferForm"><input id="amt1" value="1000"><button onclick="doTransfer(1000)">Transfer</button></div>
+    <div id="blockPage" style="display:none" class="blockPage"><h2>❌ Transaction Blocked</h2><p id="blockReason"></p><p>Ref: <span id="blockRef"></span></p><p>SAMA Compliance - Fake GPS detected (Acc 0.0)</p></div>
+  </div>
+
+  <div id="post3" class="screen" style="display:none">
+    <h3>Screen 6: Transfer SAR 5000 - High Value</h3>
+    <div id="transferForm2"><input id="amt2" value="5000"><button onclick="doTransfer(5000)">Transfer High Value</button></div>
+    <div id="blockPage2" style="display:none" class="blockPage"><h2>❌ High Value Blocked</h2><p id="blockReason2"></p><p>Ref: <span id="blockRef2"></span></p></div>
+  </div>
+
+  <a href="index.html">⬅️ Back to Pre-Login</a>
+</div>
+<script src="samaPreLogin.js"></script>
+<script src="samaPostLogin.js"></script>
+<script>
+function showPost(n){
+  document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
+  document.getElementById("post"+n).style.display="block";
+  let fake = localStorage.getItem("FAKE_GPS")==="1";
+  document.getElementById("riskBadge").innerHTML = fake ? '<div class="banner block">Risk: 960 - Nigeria (Fake) - Acc 0.0</div>' : '<div class="banner ok">Risk: 120 - Riyadh (Real)</div>';
+  if(n===1){ 
+    let bal = document.getElementById("bal");
+    if(fake){ bal.innerText="****"; document.getElementById("dashLog").innerText="SAMA YELLOW: Balance hidden, Transfer disabled - Risk 960"; }
+    else document.getElementById("dashLog").innerText="SAMA GREEN: All OK";
+  }
+}
+async function doTransfer(amt){
+  let res = await checkSAMA_PostLogin("Transfer", amt);
+  if(!res.allowed){
+    if(amt===1000){ document.getElementById("blockReason").innerText=res.reason; document.getElementById("blockRef").innerText=res.refId; document.getElementById("blockPage").style.display="block"; document.getElementById("transferForm").style.display="none"; }
+    else { document.getElementById("blockReason2").innerText=res.reason; document.getElementById("blockRef2").innerText=res.refId; document.getElementById("blockPage2").style.display="block"; document.getElementById("transferForm2").style.display="none"; }
+  } else alert("Transfer Allowed - Real GPS");
+}
+showPost(1);
+</script>
+</body>
+</html>
