@@ -6,9 +6,9 @@
 <title>SAB - Secure Dashboard</title>
 <style>
 body{font-family:Segoe UI;background:#f5f5f5;margin:0;padding:20px;}
-.card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:relative;min-height:320px;}
-.success{background:#d4edda;border:2px solid #28a745;padding:15px;border-radius:8px;color:#155724;margin-top:15px;line-height:1.6;}
-.danger{background:#f8d7da;border:2px solid #dc3545;padding:15px;border-radius:8px;color:#721c24;margin-top:15px;line-height:1.6;}
+.card{max-width:500px;margin:60px auto;background:white;padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:relative;min-height:300px;}
+.success{background:#d4edda;border:2px solid #28a745;padding:15px;border-radius:8px;color:#155724;margin-top:10px;line-height:1.7;}
+.danger{background:#f8d7da;border:2px solid #dc3545;padding:15px;border-radius:8px;color:#721c24;margin-top:10px;line-height:1.7;}
 .btn{width:100%;padding:14px;border:none;border-radius:8px;font-weight:bold;margin-top:15px;cursor:pointer;}
 .btn-green{background:#004D40;color:white;}
 .btn-gray{background:#6c757d;color:white;}
@@ -16,23 +16,21 @@ body{font-family:Segoe UI;background:#f5f5f5;margin:0;padding:20px;}
 .lang button{padding:6px 14px;border:none;border-radius:5px;font-weight:bold;cursor:pointer;}
 .active{background:#004D40!important;color:white!important;}
 .inactive{background:#eee!important;color:#333!important;}
-.live-badge{font-size:11px;color:#28a745;background:#e8f5e9;padding:3px 8px;border-radius:10px;margin-left:8px;display:inline-block;}
-.status-line{min-height:20px;font-size:13px;color:#666;}
+.live-badge{font-size:11px;color:#28a745;background:#e8f5e9;padding:3px 8px;border-radius:10px;margin-left:8px;display:inline-block;vertical-align:middle;}
 </style>
 </head>
 <body>
 <div class="card">
 <div class="lang"><button id="btnEN" onclick="setLang('en')" class="active">EN</button><button id="btnAR" onclick="setLang('ar')" class="inactive">العربية</button></div>
 <h2 style="color:#004D40;margin-top:40px;" id="title">SAB - Secure Dashboard</h2>
-<p id="status" class="status-line"></p>
 <div id="box">Loading...</div>
 <button class="btn btn-green" onclick="location.href='index.html'" id="backBtn">← Back to Security Check</button>
 <button class="btn btn-gray" onclick="logout()" id="logoutBtn">Logout</button>
 </div>
 <script>
 const i18n={
-en:{title:"SAB - Secure Dashboard",blocked:"⚠️ High-Risk Transactions Blocked",allowed:"✅ Low-Risk - Transactions Allowed",loc:"🌍 Location:",risk:"Risk Score:",mock:"Mock location detected - SAMA policy active",clean:"Clean location - SAMA compliant",back:"← Back to Security Check",logout:"Logout",live:"LIVE AUTO",checking:"📡 Checking location..."},
-ar:{title:"SAB - لوحة التحكم الآمنة",blocked:"⚠️ تم حظر المعاملات عالية المخاطر",allowed:"✅ معاملات مسموحة - مخاطر منخفضة",loc:"🌍 الموقع:",risk:"مستوى المخاطر:",mock:"تم اكتشاف موقع وهمي - سياسة ساما نشطة",clean:"موقع نظيف - متوافق مع ساما",back:"← العودة لفحص الأمان",logout:"تسجيل خروج",live:"مباشر",checking:"📡 جاري فحص الموقع..."}
+en:{title:"SAB - Secure Dashboard",blocked:"⚠️ High-Risk Transactions Blocked",allowed:"✅ Low-Risk - Transactions Allowed",loc:"🌍 Location:",acc:"Accuracy:",risk:"Risk Score:",mock:"Mock location detected - SAMA policy active",clean:"Clean location - SAMA compliant",back:"← Back to Security Check",logout:"Logout",live:"LIVE AUTO"},
+ar:{title:"SAB - لوحة التحكم الآمنة",blocked:"⚠️ تم حظر المعاملات عالية المخاطر",allowed:"✅ معاملات مسموحة - مخاطر منخفضة",loc:"🌍 الموقع:",acc:"الدقة:",risk:"مستوى المخاطر:",mock:"تم اكتشاف موقع وهمي - سياسة ساما نشطة",clean:"موقع نظيف - متوافق مع ساما",back:"← العودة لفحص الأمان",logout:"تسجيل خروج",live:"مباشر"}
 };
 let currentLang=localStorage.getItem('sama_lang')||'en',lastLat=0,lastLon=0,watchId=null,lastData=null;
 
@@ -49,19 +47,23 @@ function render(d,city){
  document.getElementById('title').innerText=t.title;
  document.getElementById('backBtn').innerText=t.back;
  document.getElementById('logoutBtn').innerText=t.logout;
- document.getElementById('status').innerHTML=`${t.checking} <span class="live-badge">● ${t.live} ${d.acc}m</span>`;
  let html='';
  if(d.isMock || d.risk>=900){
-   html=`<div class="danger"><b>${t.blocked}</b><br><br>${t.loc} ${city} <span class="live-badge">● ${t.live}</span><br>${t.risk} ${d.risk}<br><br>${t.mock}</div>`;
+   html=`<div class="danger"><b>${t.blocked}</b><br><br>${t.loc} ${city}<br>${t.acc} ${d.acc}m <span class="live-badge">● ${t.live}</span><br>${t.risk} ${d.risk}<br><br>${t.mock}</div>`;
  }else{
-   html=`<div class="success"><b>${t.allowed}</b><br><br>${t.loc} ${city} <span class="live-badge">● ${t.live}</span><br>${t.risk} ${d.risk}<br><br>${t.clean}</div>`;
+   html=`<div class="success"><b>${t.allowed}</b><br><br>${t.loc} ${city}<br>${t.acc} ${d.acc}m <span class="live-badge">● ${t.live}</span><br>${t.risk} ${d.risk}<br><br>${t.clean}</div>`;
  }
  document.getElementById('box').innerHTML=html;
 }
 
 async function startLive(){
  let raw=localStorage.getItem('sama_last_detection');
- if(raw){lastData=JSON.parse(raw); let city=await getCity(lastData.lat,lastData.lon,currentLang); render(lastData,city); lastLat=lastData.lat; lastLon=lastData.lon;}
+ if(raw){
+   lastData=JSON.parse(raw);
+   let city=await getCity(lastData.lat,lastData.lon,currentLang);
+   render(lastData,city);
+   lastLat=lastData.lat; lastLon=lastData.lon;
+ }
  if(watchId) navigator.geolocation.clearWatch(watchId);
  watchId=navigator.geolocation.watchPosition(async pos=>{
    let lat=pos.coords.latitude,lon=pos.coords.longitude,acc=Math.round(pos.coords.accuracy);
@@ -74,7 +76,6 @@ async function startLive(){
    localStorage.setItem('sama_last_detection',JSON.stringify(lastData));
    let city=await getCity(lat,lon,currentLang);
    render(lastData,city);
-   localStorage.setItem('sama_last_detection',JSON.stringify({...lastData,city}));
  },null,{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
 }
 
