@@ -1,63 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAMA Secure - Post-Login</title>
-<link rel="stylesheet" href="style.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><title>SAB - Dashboard</title>
+<style>body{font-family:Segoe UI; background:#f5f5f5; padding:20px;}.card{max-width:600px; margin:40px auto; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);}.block{background:#f8d7da; border:2px solid #dc3545; padding:20px; border-radius:10px;}</style>
 </head>
 <body>
-<div class="container">
-<h2>💰 Post-Login - SAR 50,000 Transfer</h2>
-<div id="post-box" style="padding:15px; border-radius:10px; background:#fff3e0; border:2px solid orange;">📡 Verifying Post-Login Security...</div>
-<br>
-<div id="transfer-box" style="padding:20px; border-radius:10px; text-align:center; font-size:18px; font-weight:bold;">Verifying...</div>
-<br>
-<button onclick="location.href='index.html'" style="padding:12px; background:#333; color:white; width:100%; border-radius:8px;">⬅️ Back to Pre-Login</button>
-<div style="font-size:11px;color:#888;margin-top:10px;text-align:center;">Continuous Monitoring: Active | Auto-Refresh: 3s | SAMA CSF Compliant</div>
+<div class="card">
+<h2 style="color:#004D40;">SAB - Secure Dashboard</h2>
+<div id="dashBox">Loading...</div>
 </div>
 <script>
-let locName="Resolving location...";
-async function getLocationName(lat,lon){
- try{
-  const r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-  const d=await r.json();
-  const city=d.city||d.locality||d.principalSubdivision||"";
-  const country=d.countryName||"";
-  locName=city?`${city}, ${country}`:country;
-  return locName;
- }catch{ return `${lat.toFixed(4)}, ${lon.toFixed(4)}`; }
+const i18n = {
+  en: {
+    blockedTitle: "🚫 POST-LOGIN SECURITY BLOCK",
+    amount: "Amount: SAR 50,000 BLOCKED",
+    reason: "Reason:", risk: "Risk Score:", location: "Location:", status: "Status: Transaction BLOCKED - SAMA Policy",
+    instruction: "Disable mock location from Developer Options and retry."
+  },
+  ar: {
+    blockedTitle: "🚫 حظر أمني - بعد تسجيل الدخول",
+    amount: "المبلغ: ٥٠٬٠٠٠ ريال محظور",
+    reason: "السبب:", risk: "درجة المخاطر:", location: "الموقع:", status: "الحالة: تم حظر المعاملة - سياسة ساما",
+    instruction: "قم بتعطيل الموقع الوهمي من خيارات المطور وحاول مرة أخرى."
+  }
+};
+let lang = localStorage.getItem('sama_lang') || 'en';
+document.documentElement.lang = lang;
+document.documentElement.dir = lang==='ar'? 'rtl' : 'ltr';
+const t = i18n[lang];
+const d = JSON.parse(localStorage.getItem('sama_last_detection') || '{}');
+
+if(d.isMock){
+  document.getElementById('dashBox').innerHTML = `
+    <div class="block">
+      <h3>${t.blockedTitle}</h3>
+      <b style="font-size:18px;">${t.amount}</b><br><br>
+      ${t.location} ${d.city || 'Unknown'}<br>
+      ${t.reason} ${d.reason}<br>
+      ${t.risk} ${d.risk} - Allowed: False<br><br>
+      <b>${t.status}</b><br><br>
+      ${t.instruction}
+    </div>`;
+} else {
+  document.getElementById('dashBox').innerHTML = `<div style="background:#d4edda; padding:20px; border-radius:10px;">✅ Welcome - Clean Location: ${d.city} - All transactions allowed</div>`;
 }
-function showBlock(lat,lon,acc,reason){
- getLocationName(lat,lon).then(name=>{
-  document.getElementById("post-box").style.background="#ffebee"; document.getElementById("post-box").style.border="2px solid red";
-  document.getElementById("post-box").innerHTML=`🚫 <b>POST-LOGIN SECURITY BLOCK</b><br>📍 ${lat.toFixed(4)}, ${lon.toFixed(4)} Accuracy:${acc}m<br>🌍 Location: <b>${name}</b><br>Reason: ${reason}<br><b>Risk Score: 960 - Allowed: False</b><br>SAMA BLOCK<br><small>${new Date().toLocaleTimeString()} - Auto</small>`;
-  const t=document.getElementById("transfer-box");
-  t.style.background="#ffcdd2"; t.style.color="red"; t.style.border="2px solid red";
-  t.innerHTML=`💰 SAR 50,000<br><br>🚫 TRANSACTION BLOCKED<br>🌍 ${name}<br>Mock Detected - Risk: 960<br><span style="font-size:14px;">Disable mock location - SAMA Policy</span>`;
- });
-}
-function showAllow(lat,lon,acc){
- getLocationName(lat,lon).then(name=>{
-  document.getElementById("post-box").style.background="#e8f5e9"; document.getElementById("post-box").style.border="2px solid green";
-  document.getElementById("post-box").innerHTML=`✅ LIVE Verified: ${lat.toFixed(4)}, ${lon.toFixed(4)} Accuracy:${acc}m<br>✅ Authentic Location<br>🌍 Location: <b>${name}</b><br><b>Risk Score: 100 - Allowed: True</b><br>SAMA PASS<br><small>${new Date().toLocaleTimeString()}</small>`;
-  const t=document.getElementById("transfer-box");
-  t.style.background="#c8e6c9"; t.style.color="green"; t.style.border="2px solid green";
-  t.innerHTML=`💰 SAR 50,000<br><br>✅ TRANSACTION ALLOWED<br>🌍 ${name}<br>Risk Score: 100 Accuracy:${acc}m<br><span style="font-size:14px;">Authentic GPS Verified</span>`;
- });
-}
-function checkGPS(){
- navigator.geolocation.getCurrentPosition(p=>{
-  const lat=p.coords.latitude, lon=p.coords.longitude, acc=Math.round(p.coords.accuracy);
-  const alt=p.coords.altitude, speed=p.coords.speed;
-  let fake=false, reason="";
-  if(acc<=5){ fake=true; reason=`Abnormally low accuracy (${acc}m)`; }
-  else if(acc===0){ fake=true; reason=`Zero accuracy (0m)`; }
-  else if(alt===null && speed===null && acc<12){ fake=true; reason=`Missing data with low accuracy ${acc}m`; }
-  if(fake) showBlock(lat,lon,acc,reason); else showAllow(lat,lon,acc);
- }, e=>{ document.getElementById("post-box").innerHTML="❌ GPS Error: "+e.message; }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
-}
-checkGPS(); setInterval(checkGPS,3000);
 </script>
 </body>
 </html>
